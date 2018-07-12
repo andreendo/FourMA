@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
 import java.util.ArrayList;
 
 import javax.swing.JTable;
@@ -35,6 +36,7 @@ import com.general.mbts4ma.EventInstance;
 import com.general.mbts4ma.Parameter;
 import com.general.mbts4ma.view.MainView;
 import com.general.mbts4ma.view.framework.vo.GraphProjectVO;
+
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.svg.ParseException;
 
@@ -77,7 +79,10 @@ public class ParametersDialog extends JDialog {
 
 	private void eventNameGenerator() {
 		StringBuilder sb = new StringBuilder();
-		for (String s : ((String) this.vertice.getValue()).toLowerCase().replaceAll("[^\\w\\s]", "").split(" ")) {
+		// for (String s : ((String)
+		// this.vertice.getValue()).toLowerCase().replaceAll("[^\\w\\s]", "").split("
+		// ")) {
+		for (String s : ((String) this.vertice.getValue()).toLowerCase().replaceAll("[^a-zA-Z ]+", "").split(" ")) {
 			sb.append(s.charAt(0));
 		}
 		this.eventInstanceName = sb.toString();
@@ -378,24 +383,12 @@ public class ParametersDialog extends JDialog {
 		}
 
 		TableColumn column = this.tblEventProperties.getTableHeader().getColumnModel().getColumn(col);
-		// if (!header.contains(column.getHeaderValue().toString())) {
-		// printTableModelInfo();
-		// printHeader();
-		// System.out.println("\nIF QUE NÃO REMOVE DO HEADER");
-		// System.out.println(
-		// "\nVALOR DO COLUMN QUE VEM DO HEADER = " +
-		// column.getHeaderValue().toString().split(" : ")[0]);
-		// this.tblEventProperties.removeColumn(column);
-		// return;
-		// }
 		if (column != null) {
 			this.tblEventProperties.removeColumn(column);
 			// COLUNA PRESENTE NO HEADER, MAS NÃO NO ARRAY DE EVENTINSTANCE
 			if (header.get(col).equals(column.getHeaderValue().toString())) {
 				header.remove(col);
 				// COLUNA PRESENTE NO HEADER E NO ARRAY DE EVENTINSTANCE
-				//printHeader();
-				//printValues();
 				if (!this.values.isEmpty()) {
 					for (EventInstance e : this.values) {
 						e.getParameters().remove(col - 1);
@@ -414,7 +407,7 @@ public class ParametersDialog extends JDialog {
 }
 
 class HeaderSelector extends MouseAdapter {
-	String[] typeStrings = {"String", "int", "float"};
+	String[] typeStrings = { "String", "int", "float" };
 	HeaderEditor editor;
 	ArrayList<EventInstance> values;
 

@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.general.mbts4ma.*;
-import com.general.mbts4ma.erunner.Event;
 
 public class GraphProjectVO extends AbstractVO implements Serializable {
 
@@ -19,9 +19,9 @@ public class GraphProjectVO extends AbstractVO implements Serializable {
 	private String androidProjectPath;
 
 	private String graphXML;
-	
+
 	private boolean itsAndroidProject = false;
-	
+
 	private String framework;
 
 	private String applicationPackage;
@@ -30,10 +30,11 @@ public class GraphProjectVO extends AbstractVO implements Serializable {
 	private Map<String, String> methodTemplatesByVertices;
 	private Map<String, Map<String, String>> methodTemplatesPropertiesByVertices;
 	private Map<String, String> edgeTemplates;
-	
+
 	private Map<String, ArrayList<EventInstance>> eventInstanceByVertice;
 	private ArrayList<EventInstance> eventInstance;
-	
+	private ArrayList<Constraint> constraints;
+
 	private String user;
 	private Date lastDate;
 
@@ -73,15 +74,15 @@ public class GraphProjectVO extends AbstractVO implements Serializable {
 	public void setGraphXML(String graphXML) {
 		this.graphXML = graphXML;
 	}
-	
-	public String getFramework(){
+
+	public String getFramework() {
 		return this.framework;
 	}
-	
-	public void setFramework(String framework){
+
+	public void setFramework(String framework) {
 		this.framework = framework;
 	}
-	
+
 	public boolean getItsAndroidProject() {
 		return this.itsAndroidProject;
 	}
@@ -113,10 +114,22 @@ public class GraphProjectVO extends AbstractVO implements Serializable {
 
 		return this.methodTemplatesByVertices;
 	}
-	
+
 	// EI - GET
-	public ArrayList<EventInstance> getEventInstanceByVertice(String verticeId){
+	public ArrayList<EventInstance> getEventInstanceByVertice(String verticeId) {
 		return this.getEventInstanceByVertices().get(verticeId);
+	}
+
+	public String getVerticeIdByEventInstace(String id) {
+		Map<String, ArrayList<EventInstance>> eventMap = this.getEventInstanceByVertices();
+		for (String key : eventMap.keySet()) {
+			ArrayList<EventInstance> list = eventMap.get(key);
+			for (EventInstance e : list) {
+				if (e.getId().equals(id))
+					return key;
+			}
+		}
+		return "";
 	}
 
 	public void updateMethodTemplateByVertice(String verticeId, String methodTemplate) {
@@ -126,7 +139,7 @@ public class GraphProjectVO extends AbstractVO implements Serializable {
 	public void removeMethodParametersByVertices(String verticeId) {
 		this.getMethodTemplatesByVertices().remove(verticeId);
 	}
-	
+
 	// EI - REMOVE (ESPECÍFICO)
 	public void removeEventInstance(EventInstance ei) {
 		this.eventInstance.remove(ei);
@@ -143,7 +156,7 @@ public class GraphProjectVO extends AbstractVO implements Serializable {
 
 		return this.methodTemplatesPropertiesByVertices;
 	}
-	
+
 	// EI -- GET
 	public Map<String, ArrayList<EventInstance>> getEventInstanceByVertices() {
 		if (this.eventInstanceByVertice == null) {
@@ -156,7 +169,7 @@ public class GraphProjectVO extends AbstractVO implements Serializable {
 	public void updateMethodTemplatePropertiesByVertice(String verticeId, Map<String, String> properties) {
 		this.getMethodTemplatesPropertiesByVertices().put(verticeId, properties);
 	}
-	
+
 	// EI - UPDATE
 	public void updateEventInstanceByVertices(String verticeId, ArrayList<EventInstance> properties) {
 		this.getEventInstanceByVertices().put(verticeId, properties);
@@ -165,25 +178,44 @@ public class GraphProjectVO extends AbstractVO implements Serializable {
 	public void removeMethodTemplatePropertiesByVertice(String verticeId) {
 		this.getMethodTemplatesPropertiesByVertices().remove(verticeId);
 	}
-	
+
 	// EI - REMOVE
 	public void removeEventInstanceByVertices(String verticeId) {
 		this.getEventInstanceByVertices().remove(verticeId);
 	}
-	
+
 	// remove Parameters
 	public void removeMethodParametersPropertiesByVertices(String verticeId) {
 		this.getMethodTemplatesPropertiesByVertices().remove(verticeId);
 	}
 
-	public void setMethodTemplatesPropertiesByVertices(Map<String, Map<String, String>> methodTemplatesPropertiesByVertices) {
+	public void setMethodTemplatesPropertiesByVertices(
+			Map<String, Map<String, String>> methodTemplatesPropertiesByVertices) {
 		this.methodTemplatesPropertiesByVertices = methodTemplatesPropertiesByVertices;
 	}
-	
+
 	// EI - SET
 	public void setEventInstanceByVertices(Map<String, ArrayList<EventInstance>> eventInstanceByVertice) {
 		this.eventInstanceByVertice = eventInstanceByVertice;
 	}
+
+	// BEGIN - CONSTRAINTS
+
+	public void removeConstraint(Constraint c) {
+		this.constraints.remove(c);
+	}
+
+	public ArrayList<Constraint> getConstraints() {
+		if (this.constraints == null)
+			return new ArrayList<Constraint>();
+		return this.constraints;
+	}
+
+	public void setConstraints(ArrayList<Constraint> constraints) {
+		this.constraints = constraints;
+	}
+
+	// END - CONSTRAINTS
 
 	public Map<String, String> getEdgeTemplates() {
 		if (this.edgeTemplates == null) {

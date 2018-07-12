@@ -273,6 +273,7 @@ public class CustomGraphActions {
 				if (selectedCells != null && selectedCells.length > 0) {
 					graph.getModel().beginUpdate();
 					
+					
 					for (Object selectedCell : selectedCells) {
 						mxCell vertice = (mxCell) selectedCell;
 

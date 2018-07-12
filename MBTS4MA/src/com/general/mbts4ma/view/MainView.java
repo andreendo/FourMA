@@ -40,6 +40,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import com.general.mbts4ma.view.dialog.ConstraintsDialog;
 import com.general.mbts4ma.view.dialog.ExtractCESsDialog;
 import com.general.mbts4ma.view.dialog.ExtractEventFlowDialog;
 import com.general.mbts4ma.view.dialog.ProjectPropertiesDialog;
@@ -120,6 +122,7 @@ public class MainView extends JFrame {
 	private JButton btnExtractEventFlow;
 	private JButton btnGenerateReusedEsg;
 	private JMenuItem mnItemGenerateReusedESG;
+	private JMenuItem mnItemManageConstraints;
 
 	public MainView() {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -229,6 +232,17 @@ public class MainView extends JFrame {
 		});
 		this.mnItemGenerateReusedESG.setFont(new Font("Verdana", Font.PLAIN, 12));
 		this.mnProject.add(this.mnItemGenerateReusedESG);
+
+		// CONSTRAINT
+		this.mnItemManageConstraints = new JMenuItem("Manage Constraints");
+		this.mnItemManageConstraints.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				MainView.this.displayManageConstraints();
+			}
+		});
+		this.mnProject.add(this.mnItemManageConstraints);
+		this.mnItemManageConstraints.setFont(new Font("Verdana", Font.PLAIN, 12));
 
 		JSeparator separator_1 = new JSeparator();
 		this.mnProject.add(separator_1);
@@ -343,16 +357,14 @@ public class MainView extends JFrame {
 
 		this.configureKeyboardEvents();
 
-		/* this.graph.getSelectionModel().addListener(mxEvent.CHANGE, new mxIEventListener() {
-		
-			@Override
-			public void invoke(Object sender, mxEventObject event) {
-				try {
-					System.out.println(((mxCell) ((mxGraphSelectionModel) sender).getCell()).getValue());
-				} catch (Exception e) {
-				}
-			}
-		}); */
+		/*
+		 * this.graph.getSelectionModel().addListener(mxEvent.CHANGE, new
+		 * mxIEventListener() {
+		 * 
+		 * @Override public void invoke(Object sender, mxEventObject event) { try {
+		 * System.out.println(((mxCell) ((mxGraphSelectionModel)
+		 * sender).getCell()).getValue()); } catch (Exception e) { } } });
+		 */
 
 		this.graph.addListener(mxEvent.CELLS_REMOVED, new mxIEventListener() {
 
@@ -367,7 +379,7 @@ public class MainView extends JFrame {
 				}
 			}
 		});
-		
+
 		this.graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
 
 			@Override
@@ -375,16 +387,19 @@ public class MainView extends JFrame {
 				super.mousePressed(e);
 
 				if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
-					String nodeValue = JOptionPane.showInputDialog(null, "Enter the value of the node", "Attention", JOptionPane.INFORMATION_MESSAGE);
-										
+					String nodeValue = JOptionPane.showInputDialog(null, "Enter the value of the node", "Attention",
+							JOptionPane.INFORMATION_MESSAGE);
+
 					if (nodeValue != null && !"".equalsIgnoreCase(nodeValue)) {
 						MainView.this.graph.getModel().beginUpdate();
 
-						MainView.this.graph.insertVertex(MainView.this.graph.getDefaultParent(), UUID.randomUUID().toString(), nodeValue, e.getX() - 50, e.getY() - 25, 100, 50, NORMAL_VERTEX);
+						MainView.this.graph.insertVertex(MainView.this.graph.getDefaultParent(),
+								UUID.randomUUID().toString(), nodeValue, e.getX() - 50, e.getY() - 25, 100, 50,
+								NORMAL_VERTEX);
 
 						MainView.this.graph.getModel().endUpdate();
 					}
-										
+
 				} else {
 					if (SwingUtilities.isMiddleMouseButton(e)) {
 						MainView.this.graphComponent.zoomActual();
@@ -393,47 +408,55 @@ public class MainView extends JFrame {
 						popup.add(MainView.this.bind("Delete", CustomGraphActions.getDeleteAction()));
 						popup.add(MainView.this.bind("Rename", CustomGraphActions.getEditAction()));
 						popup.add(MainView.this.bind("Display ID", CustomGraphActions.getDisplayIdAction()));
-						popup.add(MainView.this.bind("Parameters", CustomGraphActions.getParametersAction(MainView.this.graphProject)));
+						popup.add(MainView.this.bind("Parameters",
+								CustomGraphActions.getParametersAction(MainView.this.graphProject)));
 
 						popup.addSeparator();
 
 						popup.add(MainView.this.bind("Select All Edges", CustomGraphActions.getSelectAllEdgesAction()));
-						popup.add(MainView.this.bind("Select All Vertices", CustomGraphActions.getSelectAllVerticesAction()));
+						popup.add(MainView.this.bind("Select All Vertices",
+								CustomGraphActions.getSelectAllVerticesAction()));
 
 						popup.addSeparator();
 
 						final JMenu methodTemplatesMenu = new JMenu("Method Templates");
 
-						methodTemplatesMenu.add(MainView.this.bind("Clear Method Template", CustomGraphActions.getClearMethodTemplateAction(MainView.this.graphProject)));
+						methodTemplatesMenu.add(MainView.this.bind("Clear Method Template",
+								CustomGraphActions.getClearMethodTemplateAction(MainView.this.graphProject)));
 
 						methodTemplatesMenu.addSeparator();
 
-						Map<String, String> methodTemplates = GraphProjectBO.getMethodTemplates(graphProject.getFramework());
+						Map<String, String> methodTemplates = GraphProjectBO
+								.getMethodTemplates(graphProject.getFramework());
 
 						Iterator<String> iMethodTemplates = methodTemplates.keySet().iterator();
 
 						while (iMethodTemplates.hasNext()) {
 							String key = iMethodTemplates.next();
 
-							methodTemplatesMenu.add(MainView.this.bind(key, CustomGraphActions.getDefineMethodTemplateAction(MainView.this.graphProject, key)));
+							methodTemplatesMenu.add(MainView.this.bind(key,
+									CustomGraphActions.getDefineMethodTemplateAction(MainView.this.graphProject, key)));
 						}
 
 						popup.add(methodTemplatesMenu);
 
 						final JMenu edgeTemplatesMenu = new JMenu("Edge Templates");
 
-						edgeTemplatesMenu.add(MainView.this.bind("Clear Edge Template", CustomGraphActions.getClearEdgeTemplateAction(MainView.this.graphProject)));
+						edgeTemplatesMenu.add(MainView.this.bind("Clear Edge Template",
+								CustomGraphActions.getClearEdgeTemplateAction(MainView.this.graphProject)));
 
 						edgeTemplatesMenu.addSeparator();
 
-						Map<String, String> edgeTemplates = GraphProjectBO.getEdgeTemplates(graphProject.getFramework());
+						Map<String, String> edgeTemplates = GraphProjectBO
+								.getEdgeTemplates(graphProject.getFramework());
 
 						Iterator<String> iEdgeTemplates = edgeTemplates.keySet().iterator();
 
 						while (iEdgeTemplates.hasNext()) {
 							String key = iEdgeTemplates.next();
 
-							edgeTemplatesMenu.add(MainView.this.bind(key, CustomGraphActions.getDefineEdgeTemplateAction(MainView.this.graphProject, key)));
+							edgeTemplatesMenu.add(MainView.this.bind(key,
+									CustomGraphActions.getDefineEdgeTemplateAction(MainView.this.graphProject, key)));
 						}
 
 						popup.add(edgeTemplatesMenu);
@@ -480,8 +503,10 @@ public class MainView extends JFrame {
 	private void createBasicGraph() {
 		MainView.this.graph.getModel().beginUpdate();
 
-		MainView.this.graph.insertVertex(MainView.this.graph.getDefaultParent(), ID_START_VERTEX, "[", 100, 50, 50, 50, START_VERTEX);
-		MainView.this.graph.insertVertex(MainView.this.graph.getDefaultParent(), ID_END_VERTEX, "]", 400, 50, 50, 50, END_VERTEX);
+		MainView.this.graph.insertVertex(MainView.this.graph.getDefaultParent(), ID_START_VERTEX, "[", 100, 50, 50, 50,
+				START_VERTEX);
+		MainView.this.graph.insertVertex(MainView.this.graph.getDefaultParent(), ID_END_VERTEX, "]", 400, 50, 50, 50,
+				END_VERTEX);
 
 		MainView.this.graph.getModel().endUpdate();
 	}
@@ -507,7 +532,8 @@ public class MainView extends JFrame {
 	private void openProject() {
 		JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home"));
 
-		fileChooser.setFileFilter(new FileNameExtensionFilter("Model-Based Test Suite For Mobile Applications (*.mbtsma, *.graph, *.esg)", "mbtsma", "graph", "esg"));
+		fileChooser.setFileFilter(new FileNameExtensionFilter(
+				"Model-Based Test Suite For Mobile Applications (*.mbtsma, *.graph, *.esg)", "mbtsma", "graph", "esg"));
 		fileChooser.setDialogTitle("Specify a file to open");
 
 		int result = fileChooser.showOpenDialog(null);
@@ -528,7 +554,8 @@ public class MainView extends JFrame {
 			try {
 				GraphProjectBO.loadGraphFromXML(this.graph, this.graphProject.getGraphXML());
 
-				JOptionPane.showMessageDialog(null, "Project successfully opened.", "Attention", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Project successfully opened.", "Attention",
+						JOptionPane.INFORMATION_MESSAGE);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -546,7 +573,9 @@ public class MainView extends JFrame {
 			JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home"));
 
 			fileChooser.setSelectedFile(new File(this.graphProject.getName()));
-			fileChooser.setFileFilter(new FileNameExtensionFilter("Model-Based Test Suite For Mobile Applications (*.mbtsma, *.graph, *.esg)", "mbtsma", "graph", "esg"));
+			fileChooser.setFileFilter(new FileNameExtensionFilter(
+					"Model-Based Test Suite For Mobile Applications (*.mbtsma, *.graph, *.esg)", "mbtsma", "graph",
+					"esg"));
 			fileChooser.setDialogTitle("Specify a file to save");
 
 			int result = fileChooser.showSaveDialog(null);
@@ -563,7 +592,8 @@ public class MainView extends JFrame {
 			this.graphProject.setUser(HardwareUtil.getComputerName());
 
 			if (GraphProjectBO.save(fileSavingPath, this.graphProject)) {
-				JOptionPane.showMessageDialog(null, "Project successfully saved.", "Attention", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Project successfully saved.", "Attention",
+						JOptionPane.INFORMATION_MESSAGE);
 			}
 		}
 
@@ -590,10 +620,18 @@ public class MainView extends JFrame {
 		}
 	}
 
+	private void displayManageConstraints() {
+		if (this.graphProject != null) {
+			ConstraintsDialog dialog = new ConstraintsDialog(this.graphProject, this.graph);
+			
+			dialog.setVisible(true);
+		}
+	}
+
 	private void showEventPairs() {
 		if (this.graphProject != null) {
 			ArrayList<String> errorMsgs = GraphConverter.verifyESG(this.graph);
-			if(errorMsgs.isEmpty()) {
+			if (errorMsgs.isEmpty()) {
 				try {
 					GraphConverter.convertToESG(this.graph);
 
@@ -604,44 +642,42 @@ public class MainView extends JFrame {
 					dialog.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
-				}				
-			}
-			else {
+				}
+			} else {
 				JOptionPane.showMessageDialog(null, setUpMessages(errorMsgs), "Error", JOptionPane.ERROR_MESSAGE);
 			}
-			
+
 		}
 	}
-	
+
 	private String setUpMessages(ArrayList<String> msgs) {
 		StringBuilder setupMsg = new StringBuilder("");
-		for(String msg : msgs)
+		for (String msg : msgs)
 			setupMsg.append(msg + "\n");
-		
+
 		return setupMsg.toString();
 	}
 
 	private void extractCESs() {
 		if (this.graphProject != null) {
 			ArrayList<String> errorMsgs = GraphConverter.verifyESG(this.graph);
-			if(errorMsgs.isEmpty()) {			
+			if (errorMsgs.isEmpty()) {
 				try {
 					GraphSolver.solve(this.graph);
-	
+
 					List<List<Vertex>> cess = GraphSolver.getCess();
-	
+
 					String cessAsString = GraphSolver.getCESsAsString();
-	
+
 					ExtractCESsDialog dialog = new ExtractCESsDialog(this.graph, this.graphProject, cess, cessAsString);
-	
+
 					dialog.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-			}
-			else {
+			} else {
 				JOptionPane.showMessageDialog(null, setUpMessages(errorMsgs), "Error", JOptionPane.ERROR_MESSAGE);
-			}				
+			}
 		}
 	}
 
@@ -659,7 +695,8 @@ public class MainView extends JFrame {
 
 		if (result == JFileChooser.APPROVE_OPTION) {
 			try {
-				GraphProjectBO.exportToPNG(this.graph, this.graphComponent, fileChooser.getSelectedFile().getAbsolutePath());
+				GraphProjectBO.exportToPNG(this.graph, this.graphComponent,
+						fileChooser.getSelectedFile().getAbsolutePath());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -705,7 +742,8 @@ public class MainView extends JFrame {
 	}
 
 	private void exitApplication() {
-		int result = JOptionPane.showOptionDialog(null, "Are you sure you want to exit?", "Attention", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "default");
+		int result = JOptionPane.showOptionDialog(null, "Are you sure you want to exit?", "Attention",
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, new String[] { "Yes", "No" }, "default");
 
 		if (result == JOptionPane.YES_OPTION) {
 			this.dispose();
@@ -726,7 +764,8 @@ public class MainView extends JFrame {
 				MainView.this.newProject();
 			}
 		});
-		this.btnNew.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/new.png")));
+		this.btnNew.setIcon(
+				new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/new.png")));
 		this.btnNew.setFont(new Font("Verdana", Font.PLAIN, 12));
 		toolBarHeader.add(this.btnNew);
 
@@ -738,7 +777,8 @@ public class MainView extends JFrame {
 				MainView.this.openProject();
 			}
 		});
-		this.btnOpen.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/open.png")));
+		this.btnOpen.setIcon(
+				new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/open.png")));
 		this.btnOpen.setFont(new Font("Verdana", Font.PLAIN, 12));
 		toolBarHeader.add(this.btnOpen);
 
@@ -750,13 +790,15 @@ public class MainView extends JFrame {
 				MainView.this.saveProject();
 			}
 		});
-		this.btnSave.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/save.png")));
+		this.btnSave.setIcon(
+				new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/save.png")));
 		this.btnSave.setFont(new Font("Verdana", Font.PLAIN, 12));
 		toolBarHeader.add(this.btnSave);
 
 		this.btnPreferences = new JButton("");
 		this.btnPreferences.setToolTipText("Preferences");
-		this.btnPreferences.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/preferences.png")));
+		this.btnPreferences.setIcon(new ImageIcon(
+				MainView.class.getResource("/com/general/mbts4ma/view/framework/images/preferences.png")));
 		this.btnPreferences.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -772,7 +814,8 @@ public class MainView extends JFrame {
 				MainView.this.closeProject();
 			}
 		});
-		this.btnClose.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/close.png")));
+		this.btnClose.setIcon(
+				new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/close.png")));
 		this.btnClose.setFont(new Font("Verdana", Font.PLAIN, 12));
 		toolBarHeader.add(this.btnClose);
 
@@ -794,7 +837,8 @@ public class MainView extends JFrame {
 				MainView.this.displayProjectProperties();
 			}
 		});
-		this.btnProperties.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/properties.png")));
+		this.btnProperties.setIcon(
+				new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/properties.png")));
 		this.btnProperties.setToolTipText("Properties");
 		this.btnProperties.setFont(new Font("Verdana", Font.PLAIN, 12));
 		this.btnProperties.setEnabled(false);
@@ -807,12 +851,14 @@ public class MainView extends JFrame {
 				MainView.this.showEventPairs();
 			}
 		});
-		this.btnExtractEventFlow.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/eventflow.png")));
+		this.btnExtractEventFlow.setIcon(
+				new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/eventflow.png")));
 		this.btnExtractEventFlow.setToolTipText("Show edges (event pairs)");
 		this.btnExtractEventFlow.setFont(new Font("Verdana", Font.PLAIN, 12));
 		this.btnExtractEventFlow.setEnabled(false);
 		toolBarHeader.add(this.btnExtractEventFlow);
-		this.btnExecuteGraph.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/executegraph.png")));
+		this.btnExecuteGraph.setIcon(new ImageIcon(
+				MainView.class.getResource("/com/general/mbts4ma/view/framework/images/executegraph.png")));
 		this.btnExecuteGraph.setFont(new Font("Verdana", Font.PLAIN, 12));
 		toolBarHeader.add(this.btnExecuteGraph);
 
@@ -823,7 +869,8 @@ public class MainView extends JFrame {
 				MainView.this.generateReusedESG();
 			}
 		});
-		this.btnGenerateReusedEsg.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/generate.png")));
+		this.btnGenerateReusedEsg.setIcon(
+				new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/generate.png")));
 		this.btnGenerateReusedEsg.setToolTipText("Generate reused ESG");
 		this.btnGenerateReusedEsg.setFont(new Font("Verdana", Font.PLAIN, 12));
 		this.btnGenerateReusedEsg.setEnabled(false);
@@ -844,7 +891,8 @@ public class MainView extends JFrame {
 				MainView.this.exitApplication();
 			}
 		});
-		this.btnExit.setIcon(new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/exit.png")));
+		this.btnExit.setIcon(
+				new ImageIcon(MainView.class.getResource("/com/general/mbts4ma/view/framework/images/exit.png")));
 		this.btnExit.setFont(new Font("Verdana", Font.PLAIN, 12));
 		toolBarHeader.add(this.btnExit);
 
@@ -984,7 +1032,7 @@ public class MainView extends JFrame {
 		eventVertex.put(mxConstants.STYLE_FONTSIZE, "10");
 		eventVertex.put(mxConstants.STYLE_ROUNDED, true);
 		eventVertex.put(mxConstants.STYLE_EDGE, mxConstants.EDGESTYLE_ENTITY_RELATION);
-		
+
 		Map<String, Object> parameterVertex = new HashMap<String, Object>();
 		parameterVertex.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
 		parameterVertex.put(mxConstants.STYLE_FILLCOLOR, "#E6E3C4");
@@ -1022,7 +1070,7 @@ public class MainView extends JFrame {
 		stylesheet.putCellStyle(NORMAL_VERTEX, normalVertex);
 
 		stylesheet.putCellStyle(EVENT_VERTEX, eventVertex);
-		
+
 		stylesheet.putCellStyle(PARAMETER_VERTEX, parameterVertex);
 
 		stylesheet.putCellStyle(GENERATED_EVENT_VERTEX, generatedEventVertex);
