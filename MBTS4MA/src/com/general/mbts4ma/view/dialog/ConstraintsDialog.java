@@ -35,7 +35,6 @@ import com.general.mbts4ma.Constraint;
 import com.general.mbts4ma.EventInstance;
 import com.general.mbts4ma.view.MainView;
 import com.general.mbts4ma.view.framework.vo.GraphProjectVO;
-import com.github.eta.esg.Vertex;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
 
@@ -142,14 +141,12 @@ public class ConstraintsDialog extends JDialog {
 		for (mxCell c : vertices) {
 			this.verticesIdLeftEvent.add(c.getId());
 			elements.add(eventNameGenerator(c));
-			// model.addElement(eventNameGenerator(c));
 		}
 
 		Map<String, ArrayList<EventInstance>> eventMap = this.graphProject.getEventInstanceByVertices();
 		for (String key : eventMap.keySet()) {
 			for (EventInstance ei : eventMap.get(key))
 				elements.add(ei.toString());
-			// model.addElement(ei.toString());
 		}
 
 		Collections.sort(elements);
@@ -377,7 +374,6 @@ public class ConstraintsDialog extends JDialog {
 		String rightJcomboboxText = (String) this.jcomboboxRight.getSelectedItem();
 		EventInstance leftEvent = null;
 		EventInstance rightEvent = null;
-		String idLeft, idRight;
 
 		if (leftJcomboboxText.matches("^\\d$")) {
 			leftEvent = this.getEventInstanceById((String) this.jcomboboxLeft.getSelectedItem());
